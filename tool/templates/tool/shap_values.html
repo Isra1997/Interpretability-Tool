@@ -1,0 +1,24 @@
+{%  extends "tool/Main.html" %}
+{% block content%}
+<div class = "col-12">
+<!-- card 1  -->
+<div class="card text-white bg-secondary mb-3" >
+  <div class="card-header">SHAP Values(ie:- SHapley Additive exPlanations):</div>
+  <div class="card-body">
+    <h5 class="card-title"></h5>
+    <p class="card-text"><p>SHAP valuse break down a certain prediction in order to show how each feature contributed to the given prediction. Shap values can be used in cases where a system needs to explain it self for predicting a certain output(eg: a medical model explains what was the feature that contributed to a given prediction in order for doctor's to come up with a specfic health intervention).<br><br>How is a SHAP value calculated:</p>
+  <li>A baseline value is calculated for each feature contrbiuting to the prediction.</li>
+  <br>
+  <li>The Shap value then calculates how much did a particular feature drive a prediction from a baseline value to the output value.</li>
+  <br>
+  <li>The red bars shows the feature that increases the prediction and the size of the bars represents the effect of that particular feature. While the blue bars show the decreasing effect of the feature on the prediction.</li>
+
+  <br>
+  <br>
+  </p>
+  </div>
+</div>
+<!-- end of card 1 -->
+
+ </div>
+{% endblock content%}

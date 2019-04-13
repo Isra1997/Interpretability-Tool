@@ -1,0 +1,42 @@
+{%  extends "tool/Main.html" %}
+{% block content %}
+  <div class="col-12">
+  <hr>
+  
+<!-- card 1  -->
+<div class="card text-white bg-secondary mb-3" >
+  <div class="card-header">Premutation importants shows which features have the greatest impact on the prediction made by your model. The advantages of premutation importaance is that it is: </div>
+  <div class="card-body">
+    <h5 class="card-title"></h5>
+    <p class="card-text"><p></p>
+  <li>Fast to calculate.</li>
+  <br>
+  <li>Easily understood and is used alot.</li>
+  <br>
+  <li>Has the properties required to measure feature imporatnce.</li>
+  <br>
+  <br>
+  </p>
+  </div>
+</div>
+<!-- end of card 1 -->
+<!-- card 2 -->
+<div class="card text-white bg-secondary mb-3" >
+  <div class="card-header">We take the following steps to calculate preumtaion importance:</div>
+  <div class="card-body">
+    <h5 class="card-title"></h5>
+    <p class="card-text">
+  <li>Train the given model.</li>
+  <br>
+  <li>We then suffel a single column of the dataset, then we compare the prediction made by the resulting dataset with the target values. Then we calculate how much the loss function suffered from the shuffling that particular feature.This performance deterioration measure the importance of that feature.</li>
+  <br>
+  <li>Return the dataset to its previous order and move to the next column and repeat the same process.</li></p>
+  </div>
+</div>
+  </div>
+<!-- end of card 2 -->
+ 
+
+{% endblock content%}
+
+ 

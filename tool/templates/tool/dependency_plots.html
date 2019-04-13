@@ -1,0 +1,28 @@
+{%  extends "tool/Main.html" %}
+{% block content %}
+<div class = "col-12">
+<!-- card 1  -->
+<div class="card text-white bg-secondary mb-3" >
+  <div class="card-header">Dependence Contribution Plots</div>
+  <div class="card-body">
+    <h5 class="card-title"></h5>
+    <p class="card-text"><p>Dependence Contribution Plots are able to portray how different features interact togther and how this interaction affects the given prediction.</p>
+
+  <li>Each dot resprensents a row of data in the dataset.</li>
+  <br>
+  <li>Its horizontal postion represents the value of the first feature of the data</li>
+  <br>
+  <li>The vertical postion of the dot represents the impact that this data row had on the prdiction.</li>
+  <br>
+  <li>The color of the dot represents the value of the secound feature that is represented by the feature.</li>
+  <br>
+  <p>Observing the slope of the pattern of the dots and their color shows the effect of the increase and decreasing the values of the feature and whether they affect each other or not.</p>
+
+  <br>
+  <br>
+  </p>
+  </div>
+</div>
+<!-- end of card 1 -->
+
+{% endblock content %}

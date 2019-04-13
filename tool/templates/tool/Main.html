@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- our own css file -->
+    <link rel="stylesheet" type="text/css" href="{% static 'tool/main.css' %}">
+
+    <!-- fa fa icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	<title>Knowing Our Features</title>
+  <link rel="icon" type="image/ico" href="{% static 'tool/icon.png' %}" />
+ </head>
+<body style="background-color: grey;">
+  <!-- start of navbar -->
+    <ul>
+      <li><a class="active" href="{% url 'tool-home'%}">Premutation Importantce</a></li>
+      <li><a href="{% url 'tool-dependancycontribution' %}">Dependancy Plots</a></li>
+      <li><a href="{% url 'tool-ShapeValues'%}">SHAP Values</a></li>
+      <li><a href="{% url 'tool-summaryplots'%}">Summary Plots</a></li>
+      <li class="fa fa-area-chart" style="font-size:26px;color:white;float:right;padding: 14px 16px;"></li>
+    </ul>
+    <br>
+    <br>
+    <br>
+  <!-- end of navbar -->
+  <!-- container start -->
+	<div class="container">
+   <!--  <div class="row"> -->
+    <div class="col-12">
+    <p>Please uploaded your dataset and targeted prediction for interpretation:</p>
+    <hr>
+    <!-- form start -->
+     <form enctype="multipart/form-data" name="dataset_form" method="POST">
+     {% csrf_token %}
+    <!-- start browse file tag -->
+    <p>Dataset:</p>
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+      </div>
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="inputGroupFile03" name="dataset">
+        <label class="custom-file-label" for="inputGroupFile03">Choose file</label>
+      </div>
+    </div>
+    <!-- end of browse file tag -->
+
+    <!-- start of target output -->
+    <p>Targeted prediction:</p>
+    <div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="Targeted prediction" aria-label="Recipient's username" aria-describedby="basic-addon2" name="target" value="{{ target }}">
+    <div class="input-group-append">
+      <button class="btn btn-secondary" type="submit">Sumbit</button>
+    </div>
+    </div>
+    <!-- end of target output -->
+    {% block content %}
+   {% endblock content%}
+
+    </form>
+    <!-- form end -->
+    </div>
+<!--     </div>  --> 
+  </div>
+	<!-- End of container -->
+  <!-- Jquery links -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <!-- End Jquery links -->
+</body>
+</html>

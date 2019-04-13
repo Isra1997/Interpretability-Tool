@@ -1,0 +1,15 @@
+{%  extends "tool/Main.html" %}
+{% block content%}
+      <select id="drop1">
+      {% for feature_names in dropdown %}
+      <option value="{{ feature_names }}">{{ feature_names }}</option>
+      {% endfor %}
+      </select>
+
+      <select id="drop2">
+      {% for feature_names in dropdown %}
+      <option value="{{ feature_names }}">{{ feature_names }}</option>
+      {% endfor %}
+      </select>
+
+{% endblock content%}

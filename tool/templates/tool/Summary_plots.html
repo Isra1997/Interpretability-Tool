@@ -1,0 +1,25 @@
+{%  extends "tool/Main.html" %}
+{% block content %}
+<div class = "col-12">
+<!-- card 1  -->
+<div class="card text-white bg-secondary mb-3" >
+  <div class="card-header">Summary plots</div>
+  <div class="card-body">
+    <h5 class="card-title"></h5>
+    <p class="card-text"><p>Summary plots are used to find the shap value for every feature and for every sample.</p>
+
+  <li>Each dot resprensents a row of data in the dataset.</li>
+  <br>
+  <li>The color of the dot represents weather the value of the feature was high or low .</li>
+  <br>
+  <li>Its horizontal postion represents whether the feature had a positive or negative impact on the the given prediction.</li>
+  <br>
+
+  <br>
+  <br>
+  </p>
+  </div>
+</div>
+<!-- end of card 1 -->
+
+{% endblock content %}
