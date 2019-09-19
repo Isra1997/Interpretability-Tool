@@ -1,15 +1,34 @@
-{%  extends "tool/Main.html" %}
-{% block content%}
-      <select id="drop1">
+{%  extends "tool/Main.html"  %}
+{%  block content %}
+<div class="col-6">
+  <p>
+    Please enter either:
+  <li>
+    Two features you to find out the interaction between them.
+  </li>
+    <li>
+      One feature to know which feature it mostly interacts with.
+    </li>
+  </p>
+  <br />
+  <br />
+      <!-- Start of the test dropdown -->
+        <select class="browser-default custom-select" name="drop1">
+        <option selected>Feature</option>
+        {% for feature_names in dropdown %}
+        <option value="{{ feature_names }}">{{ feature_names }}</option>
+        {% endfor %}
+      </select>
+      <!-- End of the test dropdown  -->
+      <br />
+      <br />
+      <!-- Start of the test dropdown -->
+      <select class="browser-default custom-select" name="drop2">
+      <option selected>Interaction Index</option>
       {% for feature_names in dropdown %}
       <option value="{{ feature_names }}">{{ feature_names }}</option>
       {% endfor %}
-      </select>
-
-      <select id="drop2">
-      {% for feature_names in dropdown %}
-      <option value="{{ feature_names }}">{{ feature_names }}</option>
-      {% endfor %}
-      </select>
-
-{% endblock content%}
+    </select>
+      <!-- End of the test dropdown  -->
+</div>
+{% endblock %}

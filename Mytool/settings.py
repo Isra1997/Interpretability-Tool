@@ -123,3 +123,7 @@ STATIC_URL = '/static/'
 MEDIA_ROOT=os.path.join(BASE_DIR,'tool','datasets')
 
 MEDIA_URL='/datasets/'
+
+MODEL_ROOT=os.path.join(BASE_DIR, 'tool','Models')
+
+MODEL_URL='/Models/'

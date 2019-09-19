@@ -15,14 +15,14 @@
     <!-- fa fa icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-	<title>Knowing Our Features</title>
+	<title>Knowing Your Features</title>
   <link rel="icon" type="image/ico" href="{% static 'tool/icon.png' %}" />
  </head>
 <body style="background-color: grey;">
   <!-- start of navbar -->
     <ul>
-      <li><a class="active" href="{% url 'tool-home'%}">Premutation Importantce</a></li>
-      <li><a href="{% url 'tool-dependancycontribution' %}">Dependancy Plots</a></li>
+      <li><a class="active" href="{% url 'tool-home'%}">Feature Importance</a></li>
+      <li><a href="{% url 'tool-dependancycontribution' %}">Dependence plots</a></li>
       <li><a href="{% url 'tool-ShapeValues'%}">SHAP Values</a></li>
       <li><a href="{% url 'tool-summaryplots'%}">Summary Plots</a></li>
       <li class="fa fa-area-chart" style="font-size:26px;color:white;float:right;padding: 14px 16px;"></li>
@@ -33,15 +33,18 @@
   <!-- end of navbar -->
   <!-- container start -->
 	<div class="container">
-   <!--  <div class="row"> -->
-    <div class="col-12">
-    <p>Please uploaded your dataset and targeted prediction for interpretation:</p>
+<div class="row">
+
+
+    <div class="col-6">
+    <p>Please uploaded your dataset and model (Both files should have an extention of .pickel):</p>
     <hr>
     <!-- form start -->
      <form enctype="multipart/form-data" name="dataset_form" method="POST">
      {% csrf_token %}
-    <!-- start browse file tag -->
+    <!-- start browse dataset tag -->
     <p>Dataset:</p>
+    <div>
     <div class="input-group mb-3">
       <div class="input-group-prepend">
       </div>
@@ -50,24 +53,39 @@
         <label class="custom-file-label" for="inputGroupFile03">Choose file</label>
       </div>
     </div>
-    <!-- end of browse file tag -->
-
-    <!-- start of target output -->
-    <p>Targeted prediction:</p>
+    </div>
+    <!-- end of browse dataset tag -->
+    <!-- start browse model tag -->
+    <div>
+    <p>Model:</p>
     <div class="input-group mb-3">
+      <div class="input-group-prepend">
+      </div>
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="inputGroupFile03" name="model">
+        <label class="custom-file-label" for="inputGroupFile03">Choose file</label>
+      </div>
+    </div>
+    </div>
+    <!-- end of browse model tag -->
+    <!-- start of target output -->
+    <!-- <p>Targeted prediction:</p> -->
+    <!-- <div class="input-group mb-3">
     <input type="text" class="form-control" placeholder="Targeted prediction" aria-label="Recipient's username" aria-describedby="basic-addon2" name="target" value="{{ target }}">
     <div class="input-group-append">
-      <button class="btn btn-secondary" type="submit">Sumbit</button>
+
     </div>
+    </div> -->
+    <button class="btn btn-secondary" type="submit">Sumbit</button>
     </div>
+
     <!-- end of target output -->
     {% block content %}
    {% endblock content%}
 
     </form>
     <!-- form end -->
-    </div>
-<!--     </div>  --> 
+  </div>
   </div>
 	<!-- End of container -->
   <!-- Jquery links -->

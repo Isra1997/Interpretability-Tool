@@ -1,8 +1,12 @@
 {%  extends "tool/Main.html" %}
 {% block content%}
-  {% if FeatureImportance %}
-  <div>
-    {{ FeatureImportance }}
-  </div>
-  {% endif %}
+<!-- Start of the test dropdown -->
+<select class="browser-default custom-select" name="drop1">
+<option selected>Feature</option>
+{% for feature_names in dropdown %}
+<option value="{{ feature_names }}">{{ feature_names }}</option>
+{% endfor %}
+</select>
+<!-- End of the test dropdown  -->
+
 {% endblock content%}

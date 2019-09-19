@@ -6,6 +6,9 @@ from django.core.files.storage import FileSystemStorage
 import matplotlib.pyplot as plt
 from os import path
 from PIL import Image
+import tensorflow as tf
+from sklearn.externals import joblib
+
 # PremutationImportantce imports
 from IPython.display import display
 import numpy as np
@@ -19,167 +22,146 @@ from sklearn import preprocessing
 from sklearn import utils
 from sklearn import metrics, svm
 import shap
-# imports for partial plots
-# from sklearn.tree import DecisionTreeClassifier
-# from matplotlib import pyplot as plt
-# from pdpbox import pdp, get_dataset, info_plots
+# Genralizing Premuation imporatnce
+import tensorflow as tf
+from tensorflow.python.keras.layers import Input, Dense
+import pickle
+# redirect
+from django.shortcuts import redirect
+import urllib
+from urllib.parse import urlencode
+import ast
 
-
-
-# Create your views here.
-
-# 1. make sure to display a message if a target or a dataset is not set
-# 2. genralize for the all datasets
-
-def  featureimportance(request):
+# Takes a pickeled validation dataset and a pickeled trained model
+def FeatureImportanceGenral(request):
 	context = {'FeatureImportance': ''}
 	if request.method== "POST":
 		uploaded_dataset = request.FILES['dataset']
+		uploaded_model=request.FILES['model']
 		fs = FileSystemStorage()
-		name = fs.save(uploaded_dataset.name,uploaded_dataset)
-		pth='tool/'+fs.url(name)
-		read_file = pd.read_csv(pth)
-		data = read_file.iloc[0:129]
-		y = (data[request.POST.get('target')])  # Convert from string "Yes"/"No" to binary
-		feature_names = [i for i in data.columns if data[i].dtype in [np.int64]]
-		X = data[feature_names]
-		train_X, val_X, train_y, val_y = train_test_split(X, y,random_state=1)
-		lab_enc = preprocessing.LabelEncoder()
-		training_scores_encoded = lab_enc.fit_transform(train_y)
-		preiction_scores_encoded = lab_enc.fit_transform(val_y)
-		my_model = RandomForestClassifier(random_state=0).fit(train_X, training_scores_encoded)
-		perm = PermutationImportance(my_model, random_state=1)
-		perm.fit(val_X,preiction_scores_encoded)
+		name_dataset = fs.save(uploaded_dataset.name,uploaded_dataset)
+		name_model = fs.save(uploaded_model.name,uploaded_model)
+		pth_dataset='tool/'+fs.url(name_dataset)
+		pth_model='tool/'+fs.url(name_model)
+		pickel_in_model=open(pth_model,"rb")
+		pickel_in_Val=open(pth_dataset,"rb")
+		my_model = pickle.load(pickel_in_model)
+		train_X, val_X, train_y, val_y=pickle.load(pickel_in_Val)
+		perm = PermutationImportance(my_model, random_state=1).fit(val_X,val_y)
 		exp=eli5.explain_weights(perm, feature_names = val_X.columns.tolist())
 		context['FeatureImportance']= eli5.formatters.html.format_as_html(exp, include_styles=True, force_weights=True, show=('method', 'description', 'transition_features', 'targets', 'feature_importances', 'decision_tree'), preserve_density=None, highlight_spaces=True, horizontal_layout=True, show_feature_values=True)
 		display(eli5.show_weights(perm, feature_names = val_X.columns.tolist()))
 		return HttpResponse(context['FeatureImportance'])
 	return render(request, 'tool/PremutationImportantce.html', context)
 
-# 1.genralize for all datasets 
-# 2.make sure to display a message if a target or a dataset is not set
-# 3.taka a feature to plot
-
-def partialplots(request):
-	context ={''}
-	if request.method=='POST':
-		uploaded_dataset = request.FILES['dataset']
-		fs = FileSystemStorage()
-		name = fs.save(uploaded_dataset.name,uploaded_dataset)
-		pth='tool/'+fs.url(name)
-		data = pd.read_csv(pth)
-		y = data[request.POST.get('target')] # Convert from string "Yes"/"No" to binary
-		feature_names = [i for i in data.columns if data[i].dtype in [np.int64]]
-		X = data[feature_names]
-		train_X, val_X, train_y, val_y = train_test_split(X, y, random_state=1)
-		tree_model = DecisionTreeClassifier(random_state=0, max_depth=5, min_samples_split=5).fit(train_X, train_y)
-		# Create the data that we will plot
-		pdp_goals = pdp.pdp_isolate(model=tree_model, dataset=val_X, model_features=feature_names, feature='Goal Scored')
-		# plot it
-		pdp.pdp_plot(pdp_goals, 'Goal Scored')
-		plt.show()
-
-def ShapeValues(request):
+def ShapeValuesGenral(request):
+	"""This method taked a pickled dataset train_test_split and a pickled model and returns
+		the shap value of the first record in the dataset.
+		1.As we are using the kernal explainer we will use a summary of our dataset
+	     so that we can return the results faster.By using shap.kmeans with 10 as the number of
+		 means for approximations.
+		 2. The use of kernal explainers approximates the result for models and is considered to be
+		 slower than the other type of explainers
+		 3.We used kernal explainers in order to be able to use any model during the use of shap vlaues"""
 	context={'ShapeValues':''}
 	if request.method=='POST':
 		uploaded_dataset = request.FILES['dataset']
+		uploaded_model=request.FILES['model']
 		fs = FileSystemStorage()
-		name = fs.save(uploaded_dataset.name,uploaded_dataset)
-		pth='tool/'+fs.url(name)
-		data = pd.read_csv(pth)
-		y=data[request.POST.get('target')]
-		feature_names = [i for i in data.columns if i != request.POST.get('target') and (data[i].dtype in [np.int64, np.int64, bool]) ]
-		X=data[feature_names]
-		train_X, val_X, train_y, val_y = train_test_split(X, y, random_state=1)
-		my_model = RandomForestClassifier(n_estimators=30, random_state=1).fit(train_X, train_y)
-		perm = PermutationImportance(my_model, random_state=1).fit(val_X, val_y)
-		eli5.show_weights(perm, feature_names = val_X.columns.tolist())
-		data_for_prediction = val_X.iloc[0:]  # use 1 row of data here. Could use multiple rows if desired
-		# Create object that can calculate shap values
-		explainer = shap.TreeExplainer(my_model)
-		shap_values = explainer.shap_values(data_for_prediction)
+		name_dataset = fs.save(uploaded_dataset.name,uploaded_dataset)
+		name_model = fs.save(uploaded_model.name,uploaded_model)
+		pth_dataset='tool/'+fs.url(name_dataset)
+		pth_model='tool/'+fs.url(name_model)
+		pickel_in_model=open(pth_model,"rb")
+		pickel_in_Val=open(pth_dataset,"rb")
+		my_model = pickle.load(pickel_in_model)
+		train_X, val_X, train_y, val_y =pickle.load(pickel_in_Val)
+		row_to_show=5
+		# 1
+		train_X_Summary=shap.kmeans(train_X, 10)
+		Prediction_data= val_X.iloc[[row_to_show]]
+		#2 #3
+		explainer = shap.KernelExplainer(my_model.predict, train_X_Summary)
+		shap_values_test = explainer.shap_values(val_X)
 		shap.initjs()
-		temp=shap.force_plot(explainer.expected_value[0], shap_values[0], data_for_prediction,matplotlib=False)
-		shap.save_html('/Users/israragheb/Desktop/Interpertabilitiytool/Mytool/tool/templates/tool/result_of_shap.html',temp)
+		plot=shap.force_plot(explainer.expected_value, shap_values_test[row_to_show], Prediction_data,matplotlib=False)
+		shap.save_html('/Users/israragheb/Desktop/Interpertabilitiytool/Mytool/tool/templates/tool/result_of_shap.html',plot)
 		return render(request, '/Users/israragheb/Desktop/Interpertabilitiytool/Mytool/tool/templates/tool/result_of_shap.html',context)
 	return render(request, 'tool/shap_values.html', context)
 
-
+# This method is Genralized
 def summaryplots(request):
 	context={'url':''}
 	if request.method=='POST':
 		uploaded_dataset = request.FILES['dataset']
+		uploaded_model=request.FILES['model']
 		fs = FileSystemStorage()
-		name = fs.save(uploaded_dataset.name,uploaded_dataset)
-		pth='tool/'+fs.url(name)
-		read_file = pd.read_csv(pth)
-		data = read_file.iloc[0:150]
-		y=data[request.POST.get('target')]
-		feature_names = [i for i in data.columns if i != request.POST.get('target') and (data[i].dtype in [np.int64] or data[i].dtype in [bool]) ]
-		X=data[feature_names]
-		train_X, val_X, train_y, val_y = train_test_split(X, y, random_state=1)
-		my_model = RandomForestClassifier(n_estimators=30, random_state=1).fit(train_X, train_y)
-		explainer = shap.TreeExplainer(my_model)
-		shap_values = explainer.shap_values(val_X)
-		shap.summary_plot(shap_values[1], val_X,show=False)
+		name_dataset = fs.save(uploaded_dataset.name,uploaded_dataset)
+		name_model = fs.save(uploaded_model.name,uploaded_model)
+		pth_dataset='tool/'+fs.url(name_dataset)
+		pth_model='tool/'+fs.url(name_model)
+		pickel_in_model=open(pth_model,"rb")
+		pickel_in_Val=open(pth_dataset,"rb")
+		my_model = pickle.load(pickel_in_model)
+		train_X, val_X, train_y, val_y =pickle.load(pickel_in_Val)
+		train_X_Summary=shap.kmeans(train_X, 10)
+		explainer = shap.KernelExplainer(my_model.predict, train_X_Summary)
+		shap_values = explainer.shap_values(train_X)
+		plt.clf()
+		shap.summary_plot(shap_values, train_X,show=False)
 		output_path=path.join('/Users/israragheb/Desktop/Interpertabilitiytool/Mytool/tool/plots/image.png')
+		plt.tight_layout()
 		plt.savefig(output_path)
 		image_data = open('/Users/israragheb/Desktop/Interpertabilitiytool/Mytool/tool/plots/image.png', "rb").read()
 		return HttpResponse(image_data, content_type='image/png ')
 	return render(request, 'tool/Summary_plots.html', context)
 
-def loaddropdown(request):
-	context={'dropdown':''}
-	if request.method=='POST':
-		uploaded_dataset = request.FILES['dataset']
-		fs = FileSystemStorage()
-		name = fs.save(uploaded_dataset.name,uploaded_dataset)
-		pth='tool/'+fs.url(name)
-		data = pd.read_csv(pth)
-		feature_names = [i for i in data.columns if i != request.POST.get('target') and (data[i].dtype in [np.int64] or data[i].dtype in [bool]) ]
-		# context['dropdown']=feature_names
-		print(feature_names)
-		return render(request, 'tool/dropdown.html', {'dropdown':feature_names})
-	if request.method=='dep':
-		uploaded_dataset = request.FILES['dataset']
-		fs = FileSystemStorage()
-		name = fs.save(uploaded_dataset.name,uploaded_dataset)
-		pth='tool/'+fs.url(name)
-		read_file = pd.read_csv(pth)
-		data = read_file.iloc[0:150]
-		y=data[request.dep.get('target')]
-		feature_names = [i for i in data.columns if i != request.dep.get('target') and (data[i].dtype in [np.int64] or data[i].dtype in [bool]) ]
-		X=data[feature_names]
-		train_X, val_X, train_y, val_y = train_test_split(X, y, random_state=1)
-		my_model = RandomForestClassifier(n_estimators=30, random_state=1).fit(train_X, train_y)
-		explainer = shap.TreeExplainer(my_model)
-		shap_values = explainer.shap_values(val_X)
-		shap.dependence_plot(request.dep.get('drop1'), shap_values[1], X, interaction_index=request.dep.get('drop2'))
-		output_path=path.join('/Users/israragheb/Desktop/Interpertabilitiytool/Mytool/tool/plots/image1.png')
-		plt.savefig(output_path)
-		image_data = open('/Users/israragheb/Desktop/Interpertabilitiytool/Mytool/tool/plots/image1.png', "rb").read()
-		return HttpResponse(image_data, content_type='image/png')
-	return render(request, 'tool/PremutationImportantce.html', context)
-
+# This method is Genralized
 def dependancycontribution(request):
-	context={'dropdown':''}
 	if request.method=='POST':
 		uploaded_dataset = request.FILES['dataset']
+		uploaded_model=request.FILES['model']
 		fs = FileSystemStorage()
-		name = fs.save(uploaded_dataset.name,uploaded_dataset)
-		pth='tool/'+fs.url(name)
-		read_file = pd.read_csv(pth)
-		data = read_file.iloc[0:150]
-		y=data[request.POST.get('target')]
-		feature_names = [i for i in data.columns if i != request.POST.get('target') and (data[i].dtype in [np.int64] or data[i].dtype in [bool]) ]
-		X=data[feature_names]
-		train_X, val_X, train_y, val_y = train_test_split(X, y, random_state=1)
-		my_model = RandomForestClassifier(n_estimators=30, random_state=1).fit(train_X, train_y)
-		explainer = shap.TreeExplainer(my_model)
-		shap_values = explainer.shap_values(val_X)
-		shap.dependence_plot('Ball Possession %', shap_values[1], val_X, interaction_index='Goal Scored',show=False)
+		name_dataset = fs.save(uploaded_dataset.name,uploaded_dataset)
+		name_model = fs.save(uploaded_model.name,uploaded_model)
+		pth_dataset='tool/'+fs.url(name_dataset)
+		pth_model='tool/'+fs.url(name_model)
+		pickel_in_model=open(pth_model,"rb")
+		pickel_in_Val=open(pth_dataset,"rb")
+		my_model = pickle.load(pickel_in_model)
+		train_X, val_X, train_y, val_y =pickle.load(pickel_in_Val)
+		feature_names=val_X.columns.tolist()
+		print(feature_names)
+		dropdown=', '.join(feature_names)
+		print(dropdown)
+		return redirect('tool-dependancycontributionhelper', feature_names=dropdown)
+	return render(request, 'tool/dependency_plots.html', {'dropdown':''})
+
+def dependancycontributionhelper(request, feature_names='dropdown'):
+	dropdown=feature_names.split(', ')
+	# print(dropdown)
+	if request.method=='POST':
+		uploaded_dataset = request.FILES['dataset']
+		uploaded_model=request.FILES['model']
+		fs = FileSystemStorage()
+		name_dataset = fs.save(uploaded_dataset.name,uploaded_dataset)
+		name_model = fs.save(uploaded_model.name,uploaded_model)
+		pth_dataset='tool/'+fs.url(name_dataset)
+		pth_model='tool/'+fs.url(name_model)
+		pickel_in_model=open(pth_model,"rb")
+		pickel_in_Val=open(pth_dataset,"rb")
+		my_model = pickle.load(pickel_in_model)
+		train_X, val_X, train_y, val_y =pickle.load(pickel_in_Val)
+		train_X_Summary=shap.kmeans(train_X, 10)
+		explainer = shap.KernelExplainer(my_model.predict, train_X_Summary)
+		shap_values = explainer.shap_values(train_X)
+		feature=request.POST.get('drop1')
+		InteractionIndex=request.POST.get('drop2')
+		plt.clf()
+		shap.dependence_plot(feature, shap_values, train_X, interaction_index=InteractionIndex,show=False)
 		output_path=path.join('/Users/israragheb/Desktop/Interpertabilitiytool/Mytool/tool/plots/image1.png')
+		plt.tight_layout()
 		plt.savefig(output_path)
 		image_data = open('/Users/israragheb/Desktop/Interpertabilitiytool/Mytool/tool/plots/image1.png', "rb").read()
 		return HttpResponse(image_data, content_type='image/png')
-	return render(request, 'tool/dependency_plots.html', context)
+	return render(request, 'tool/dropdown.html',{'dropdown':dropdown})
